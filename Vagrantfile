@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
     end
   
     # Provisioning: install Apache server
-    config.vm.provision "shell", path: "script.sh"
+    config.vm.provision "shell", path: "provision/script.sh"
   end
 
 
