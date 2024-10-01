@@ -1,0 +1,8 @@
+- name: Configure the server
+  hosts: all
+  become: yes
+  roles:
+    - common
+    - role3
+  vars_files:
+    - variables/var.yml
