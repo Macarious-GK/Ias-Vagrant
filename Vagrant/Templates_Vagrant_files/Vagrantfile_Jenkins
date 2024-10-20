@@ -1,0 +1,38 @@
+## Vagrant file for creating Ubuntu VM server for Jenkins and Acces it form host on http://localhost:8080
+
+Vagrant.configure("2") do |config|
+  # Use Ubuntu as the base box
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.box_version = "20240712.0.0"
+
+  config.vm.hostname = "jenkins-server"
+  config.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
+
+  # Enable GUI for VirtualBox and set VM name
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "JenkinsVM"     # Set the name of the VM
+    vb.gui = false            # Disable GUI mode
+    vb.memory = "4096"        # Increase the memory allocation (optional)
+    vb.cpus = 3               # Number of CPU cores (optional)
+  end
+  
+  # Provisioning: Install Jenkins and dependencies
+  config.vm.provision "shell", inline: <<-SHELL
+    # Update the package list
+    sudo apt-get update -y && sudo apt-get upgrade -y 
+    sudo apt-get install -y fontconfig openjdk-17-jre wget
+
+    # Add Jenkins key and repository
+    sudo wget -q -O /usr/share/keyrings/jenkins-keyring.asc https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+    # Update package list again and install Jenkins
+    sudo apt-get update
+    sudo apt-get install -y jenkins
+    sudo systemctl restart jenkins
+    
+    # Display Jenkins initial admin password
+    echo "The initial admin password for Jenkins is:"
+    sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+  SHELL
+end
